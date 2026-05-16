@@ -6,6 +6,7 @@ pipeline {
         DOCKER_HUB_REPO = 'real-estate-app'
         IMAGE_NAME = "${DOCKER_HUB_USERNAME}/${DOCKER_HUB_REPO}"
         K8S_NAMESPACE = 'real-estate-app'
+        IP = 'demystops.com' // Remplacez par l'IP de votre cluster si nécessaire
     }
 
     stages {
@@ -76,8 +77,60 @@ pipeline {
             }
         }
 
-        
+        stage('Create GitHub Release') {
+            steps {
+                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                    sh """
+                        git tag -a ${env.APP_VERSION} -m "Release ${env.APP_VERSION}" || true
+                        git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_USERNAME}/real-estate-app.git ${env.APP_VERSION} || true
+                    """
+                }
+            }
+        }
 
         
+    }
+
+    post {
+        success {
+            script {
+                // ⭐ INCÉMENTER LA VERSION APRÈS SUCCÈS ⭐
+                def currentVersion = env.APP_VERSION
+                def parts = currentVersion.split('\\.')
+                def newPatch = parts[2].toInteger() + 1
+                def newVersion = "${parts[0]}.${parts[1]}.${newPatch}"
+                
+                // Mettre à jour le fichier VERSION
+                writeFile(file: 'VERSION', text: newVersion)
+                
+                // Commit et push de la nouvelle version
+                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                    sh """
+                        git config user.email "jenkins@immoapp.com"
+                        git config user.name "Jenkins CI"
+                        git add VERSION
+                        git commit -m "chore: bump version to ${newVersion} [skip ci]"
+                        git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_USERNAME}/immo-app.git main
+                    """
+                }
+                
+                echo """
+                ════════════════════════════════════════════════════════════════
+                ✅ PIPELINE RÉUSSI !
+                ════════════════════════════════════════════════════════════════
+                
+                📦 Version déployée: ${currentVersion}
+                🔄 Prochaine version: ${newVersion}
+                🐳 Image: ${IMAGE_NAME}:${currentVersion}
+                
+                🌐 Application: http://${IP}:30085
+                
+                ════════════════════════════════════════════════════════════════
+                """
+            }
+        }
+        failure {
+            echo "❌ PIPELINE ÉCHOUÉ - Version ${env.APP_VERSION} non incrémentée"
+        }
     }
 }
