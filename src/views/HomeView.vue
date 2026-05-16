@@ -17,7 +17,7 @@
         <div class="stat-label">Biens disponibles</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number">6</div>
+        <div class="stat-number">15</div>
         <div class="stat-label">Villes couvertes</div>
       </div>
       <div class="stat-item">
@@ -25,7 +25,7 @@
         <div class="stat-label">Service client</div>
       </div>
       <div class="stat-item">
-        <div class="stat-number">98%</div>
+        <div class="stat-number">100%</div>
         <div class="stat-label">Satisfaction client</div>
       </div>
     </div>
