@@ -2,7 +2,7 @@
   <div class="home">
     <div class="hero">
       <div class="hero-content">
-        <h1>🏠 TEST Sénégal</h1>
+        <h1>🏠 ImmoApp Sénégal</h1>
         <p>La référence de l'immobilier au Sénégal</p>
         <p class="subtitle">Achetez, vendez ou louez votre bien en toute confiance</p>
         <router-link to="/properties" class="cta-btn">
