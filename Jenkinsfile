@@ -31,6 +31,21 @@ pipeline {
             }
         }
 
+        stage('Push to Docker Hub') {
+            steps {
+                echo "📤 Push vers Docker Hub..."
+                withCredentials([string(credentialsId: 'docker-hub-password', variable: 'DOCKER_PASS')]) {
+                    sh """
+                        echo "${DOCKER_PASS}" | docker login -u ${DOCKER_HUB_USERNAME} --password-stdin
+                        docker push ${IMAGE_NAME}:latest
+                        docker push ${IMAGE_NAME}:${env.GIT_COMMIT}
+                        docker logout
+                    """
+                }
+                echo "✅ Image poussée sur Docker Hub"
+            }
+        }
+
         
     }
 }
