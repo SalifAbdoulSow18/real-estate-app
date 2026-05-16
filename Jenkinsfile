@@ -1,5 +1,12 @@
 pipeline {
     agent any
+     environment {
+        GITHUB_USERNAME = 'SalifAbdoulSow18'
+        DOCKER_HUB_USERNAME = 'sasow'
+        DOCKER_HUB_REPO = 'real-estate-app'
+        IMAGE_NAME = "${DOCKER_HUB_USERNAME}/${DOCKER_HUB_REPO}"
+        K8S_NAMESPACE = 'real-estate-app'
+    }
 
     stages {
 
@@ -11,23 +18,19 @@ pipeline {
             }
         }
 
-        stage('Build') {
+        stage('Build Docker Image') {
             steps {
-                echo 'Building..Tu dois marcher le build'
-                // Add your build steps here
-            }
-        } 
-        stage('Test') {
-            steps {
-                echo 'Testing...'
-                // Add your test steps here
-            }
-        }
-        stage('Deploy') {
-            steps {
-                echo 'Deploying...'
-                // Add your deploy steps here
+                echo "🐳 Build de l'image Docker..."
+                script {
+                    sh """
+                        docker build -t ${IMAGE_NAME}:latest .
+                        docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:${env.GIT_COMMIT}
+                    """
+                }
+                echo "✅ Image buildée"
             }
         }
+
+        
     }
 }
