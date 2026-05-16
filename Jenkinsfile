@@ -6,7 +6,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 git branch: 'main', 
-                    url: 'https://github.com/SalifAbdoulSow18/immo-app.git',
+                    url: 'https://github.com/SalifAbdoulSow18/real-estate-app.git',
                     credentialsId: 'github-credentials'
             }
         }
