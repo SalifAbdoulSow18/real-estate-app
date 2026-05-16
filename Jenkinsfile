@@ -10,10 +10,10 @@ pipeline {
                     credentialsId: 'github-credentials'
             }
         }
-        
+
         stage('Build') {
             steps {
-                echo 'Building...'
+                echo 'Building...jjf'
                 // Add your build steps here
             }
         } 
