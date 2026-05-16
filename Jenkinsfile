@@ -74,6 +74,7 @@ pipeline {
                         kubectl apply -f k8s/namespace.yaml
                         kubectl apply -f k8s/deployment.yaml
                         kubectl apply -f k8s/service.yaml
+                        kubectl rollout restart deployment/real-estate-app -n ${K8S_NAMESPACE}
                         kubectl rollout status deployment/real-estate-app -n ${K8S_NAMESPACE} --timeout=120s
                     """
                 }
