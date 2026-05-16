@@ -110,7 +110,7 @@ pipeline {
                         git config user.name "Jenkins CI"
                         git add VERSION
                         git commit -m "chore: bump version to ${newVersion} [skip ci]"
-                        git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_USERNAME}/immo-app.git main
+                        git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_USERNAME}/real-estate-app.git main
                     """
                 }
                 
