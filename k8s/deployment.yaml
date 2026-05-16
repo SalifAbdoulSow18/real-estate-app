@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: real-estate-app
-        image: sasow/real-estate-app:1.0.3
+        image: sasow/real-estate-app:1.0.4
         imagePullPolicy: Always
         ports:
         - containerPort: 80
