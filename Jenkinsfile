@@ -18,13 +18,24 @@ pipeline {
             }
         }
 
+        stage('Read Version') {
+            steps {
+                script {
+                    // Lire la version actuelle
+                    def versionFile = readFile('VERSION').trim()
+                    env.APP_VERSION = versionFile
+                    echo "📌 Version actuelle: ${env.APP_VERSION}"
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 echo "🐳 Build de l'image Docker..."
                 script {
                     sh """
-                        docker build -t ${IMAGE_NAME}:latest .
-                        docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:${env.GIT_COMMIT}
+                        docker build -t ${IMAGE_NAME}:${env.APP_VERSION} .
+                        docker tag ${IMAGE_NAME}:${env.APP_VERSION} ${IMAGE_NAME}:latest
                     """
                 }
                 echo "✅ Image buildée"
@@ -38,7 +49,7 @@ pipeline {
                     sh """
                         echo "${DOCKER_PASS}" | docker login -u ${DOCKER_HUB_USERNAME} --password-stdin
                         docker push ${IMAGE_NAME}:latest
-                        docker push ${IMAGE_NAME}:${env.GIT_COMMIT}
+                        docker push ${IMAGE_NAME}:${env.APP_VERSION}
                         docker logout
                     """
                 }
@@ -51,13 +62,13 @@ pipeline {
                 echo "📝 Mise à jour du tag dans les manifests..."
                 withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
                     sh """
-                        # Mettre à jour l'image dans deployment.yaml avec latest
-                        sed -i "s|image: ${IMAGE_NAME}:.*|image: ${IMAGE_NAME}:latest|" k8s/deployment.yaml
+                        # Mettre à jour l'image dans deployment.yaml avec la nouvelle version
+                        sed -i "s|image: ${IMAGE_NAME}:.*|image: ${IMAGE_NAME}:${env.APP_VERSION}|" k8s/deployment.yaml
                         
                         git config user.email "jenkins@immoapp.com"
                         git config user.name "Jenkins CI"
                         git add k8s/deployment.yaml
-                        git commit -m "release: update image to latest [skip ci]" || echo "No changes"
+                        git commit -m "release: update image to ${env.APP_VERSION} [skip ci]" || echo "No changes"
                         git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_USERNAME}/real-estate-app.git main
                     """
                 }
@@ -65,22 +76,7 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                echo "☸️ Déploiement sur Kubernetes..."
-                script {
-                    sh """
-                        export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-                        kubectl apply -f k8s/namespace.yaml
-                        kubectl apply -f k8s/deployment.yaml
-                        kubectl apply -f k8s/service.yaml
-                        kubectl rollout restart deployment/real-estate-app -n ${K8S_NAMESPACE}
-                        kubectl rollout status deployment/real-estate-app -n ${K8S_NAMESPACE} --timeout=120s
-                    """
-                }
-                echo "✅ Déploiement terminé"
-            }
-        }
+        
 
         
     }
