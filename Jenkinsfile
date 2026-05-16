@@ -13,7 +13,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building..'
+                echo 'Building..Tu dois marcher le build'
                 // Add your build steps here
             }
         } 
