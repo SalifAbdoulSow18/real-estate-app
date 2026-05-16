@@ -46,6 +46,41 @@ pipeline {
             }
         }
 
+        stage('Update Git Manifests') {
+            steps {
+                echo "📝 Mise à jour du tag dans les manifests..."
+                withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                    sh """
+                        # Mettre à jour l'image dans deployment.yaml avec latest
+                        sed -i "s|image: ${IMAGE_NAME}:.*|image: ${IMAGE_NAME}:latest|" k8s/deployment.yaml
+                        
+                        git config user.email "jenkins@immoapp.com"
+                        git config user.name "Jenkins CI"
+                        git add k8s/deployment.yaml
+                        git commit -m "release: update image to latest [skip ci]" || echo "No changes"
+                        git push https://${GITHUB_USERNAME}:${GITHUB_TOKEN}@github.com/${GITHUB_USERNAME}/real-estate-app.git main
+                    """
+                }
+                echo "✅ Manifests mis à jour sur GitHub"
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                echo "☸️ Déploiement sur Kubernetes..."
+                script {
+                    sh """
+                        export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+                        kubectl apply -f k8s/namespace.yaml
+                        kubectl apply -f k8s/deployment.yaml
+                        kubectl apply -f k8s/service.yaml
+                        kubectl rollout status deployment/real-estate-app -n ${K8S_NAMESPACE} --timeout=120s
+                    """
+                }
+                echo "✅ Déploiement terminé"
+            }
+        }
+
         
     }
 }
