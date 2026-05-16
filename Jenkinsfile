@@ -13,7 +13,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Building...jjf'
+                echo 'Building..'
                 // Add your build steps here
             }
         } 
