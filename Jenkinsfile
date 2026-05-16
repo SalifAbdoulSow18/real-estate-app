@@ -2,6 +2,15 @@ pipeline {
     agent any
 
     stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main', 
+                    url: 'https://github.com/SalifAbdoulSow18/immo-app.git',
+                    credentialsId: 'github-credentials'
+            }
+        }
+        
         stage('Build') {
             steps {
                 echo 'Building...'
