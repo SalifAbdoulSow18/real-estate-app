@@ -11,6 +11,26 @@ pipeline {
 
     stages {
 
+        stage('Check Commit Author') {
+            steps {
+                script {
+                    def commitMessage = sh(
+                        script: 'git log -1 --pretty=%B', 
+                        returnStdout: true
+                    ).trim()
+                    
+                    echo "Message du commit: ${commitMessage}"
+                    
+                    if (commitMessage.contains('[skip ci]')) {
+                        currentBuild.result = 'NOT_BUILT'
+                        error("⏭️ Build ignoré car le commit contient [skip ci]")
+                    }
+                    
+                    echo "✅ Build déclenché par un vrai commit"
+                }
+            }
+        }
+
         stage('Checkout') {
             steps {
                 git branch: 'main', 
